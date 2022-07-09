@@ -1,0 +1,164 @@
+<html>
+<head>
+<title>form</title>
+<style>
+body
+{
+background-image: url("/C:/Users/STUTI/Downloads/bkg-.jpg");
+color:white;
+text-align:center;
+}
+h1
+{
+color:red;
+}
+</style>
+</head>
+<body>
+
+<h1>Student details</h1>
+<p>Roll no:*<br>
+<input type="number" id="roll" required="required" >
+</p>
+<p>Name:*<br>
+<input type="text" id="name">
+</p>
+<p>Class:*<br>
+  <input type="text" id="class">
+  </p>
+<p>Phone:<br>
+<input type="digit" id="phone" maxlength="10" minlength="10" >
+</p>
+<p>Date of Birth:<br>
+<input type="date" id="dob">
+</p>
+<p>Password:*<br>
+<input type="password" id="pwd" minlength="8" >
+</p>
+<p>Branch:<br>
+<select name="branch" id="br">
+<option value="Select your Branch">Select your branch</option>
+<option value="Chemical Engineering">Chemical Engineering</option>
+<option value="Textile Engineering">Textile Engineering</option>
+<option value="Mechanical Engineering">Mechanical Engineering</option>
+<option value="Computer Science & Engineering">Computer Science & Engineering</option>
+<option value="Electronics Engineering">Electronics Engineering</option>
+<option value="Electrical Engineering">Electrical Engineering</option>
+</select>
+</p>
+<p>Email:<br>
+<input type="email" id="mail">
+</p>
+<button  value="submit" id="d">submit</button>
+<button  value="Get" id="get">Get</button>
+<button  value="Update" id="update">update</button>
+<button  value="Delete" id="delete">delete</button>
+<button  value="Login" id="login" onclick="location.href = 'login.html'; ">login</button>
+
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAXmuG8HujA52_MCA8_jC5Md7t6nT66I0U",
+    authDomain: "fire9db-9702f.firebaseapp.com",
+    projectId: "fire9db-9702f",
+    storageBucket: "fire9db-9702f.appspot.com",
+    messagingSenderId: "42233829133",
+    appId: "1:42233829133:web:d1ab697926559924524244"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+    import {getDatabase,ref,get,set,child,update,remove}
+    from "https://www.gstatic.com/firebasejs/9.8.4/firebase-database.js";
+    const db=getDatabase();
+    var roll=document.getElementById("roll");
+    var name=document.getElementById("name");
+    var phone=document.getElementById("phone");
+    var dob=document.getElementById("dob");
+    var pswd=document.getElementById("pwd");
+   // var gen=document.getElementById("f");
+    var branch=document.getElementById("br");
+    var mail=document.getElementById("mail");
+    var class1=document.getElementById("class");
+    var insbtn=document.getElementById("d");
+    var selbtn=document.getElementById("get");
+    var delbtn=document.getElementById("delete");
+    var updbtn=document.getElementById("update");
+    var logbtn=document.getElementById("login");
+    function InsertData(){
+      set(ref(db,"TheStudents/"+class1.value+"/"+roll.value),{
+        nameOfStu:name.value,
+        roll:roll.value,
+        mobno:phone.value,
+dob:dob.value,
+password:pswd.value,
+//gender:gen.value,
+branch:branch.value,
+mail:mail.value
+      })
+      .then(()=>{
+alert('data inserted');
+      })
+      .catch((error)=>{
+alert('Data not inserted'+error);
+      });
+    }
+    function GetData(){
+get(child(ref(db),"TheStudents/"+class1.value+"/"+roll.value)).then((snapshot)=>{
+  if(snapshot.exists()){
+    name.value=snapshot.val().nameOfStu;
+    phone.value=snapshot.val().mobno;
+    dob.value=snapshot.val().dob;
+    pswd.value=snapshot.val().password;
+    branch.value=snapshot.val().branch;
+    mail.value=snapshot.val().mail;
+  }
+  else{
+    alert('Data not found');
+  }
+})
+.catch((error)=>{
+  alert('Data not fetched'+error);
+});
+    }
+    function UpdateData(){
+      update(ref(db,"TheStudents/"+class1.value+"/"+roll.value),{
+        nameOfStu:name.value,
+        mobno:phone.value,
+dob:dob.value,
+password:pswd.value,
+//gender:gen.value,
+branch:branch.value,
+mail:mail.value
+      })
+      .then(()=>{
+alert('data updated');
+      })
+      .catch((error)=>{
+alert('Data not updated'+error);
+      });
+    }
+    function deleteData(){
+      remove(ref(db,"TheStudents/"+class1.value+"/"+roll.value))
+      .then(()=>{
+alert('data deleted');
+resetData();
+      })
+      .catch((error)=>{
+alert('Data not deleted'+error);
+      });
+    }
+   
+      insbtn.addEventListener('click',InsertData);
+    selbtn.addEventListener('click',GetData);
+    updbtn.addEventListener('click',UpdateData);
+    delbtn.addEventListener('click',deleteData);
+   // logbtn.addEventListener('click',window.location.href = "login.html");
+  </script>
+</body>
+</html>
