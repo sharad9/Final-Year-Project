@@ -1,0 +1,55 @@
+/*
+  styles from https://www.kasperkamperman.com/blog/camera-template/
+*/
+
+body {
+  margin: 40px;
+  padding: 0px;
+  background: rgb(244, 240, 240);
+}
+#overlay {
+  position: absolute;
+  
+  top: 0%;
+  left: 30%;
+  
+}
+
+@media screen and (orientation: portrait) {
+  #vid_container {
+  position: fixed;
+}
+
+#inputVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+#overlay {
+  position: absolute;
+  height: 65%;
+  top: -15%;
+  left: 0%;
+  
+}
+}
+
+
+
+#emotion-neutral.fulfilled {
+  color: grey;
+}
+
+#emotion-happy.fulfilled {
+  color: green;
+}
+
+#emotion-surprised.fulfilled {
+  color: yellow;
+}
+
+#emotion-angry.fulfilled {
+  color: red;
+}
