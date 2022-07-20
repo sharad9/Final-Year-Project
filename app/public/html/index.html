@@ -1,0 +1,86 @@
+<html>
+
+<head>
+  <title>Face Recognition Attendance System</title>
+  <script src="../script/face-api.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://getbootstrap.com/docs/5.2/assets/css/docs.css" rel="stylesheet">
+   
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js"></script>
+    
+  <script type="module">
+    import {
+    db,
+    ref,
+    set
+    } from "../script/fbmodule.js";
+
+
+/**
+    const obj = JSON.parse(localStorage.getItem("db"));
+function callme() {
+  obj["enrollment"].forEach(element => {
+  set(ref(db2, 'enrollment/' + element.label), { username: element.label, descriptor: element.descriptors });
+  });
+console.log( localStorage.getItem("name"));
+  
+  obj["attendance"].forEach(element => {
+  set(ref(db2, 'attendance/' + element.name), { username: localStorage.getItem("name"),
+  time:localStorage.getItem("time")});
+  });
+
+}
+window.setInterval(callme, 1000);
+    **/
+    </script>
+  <link rel="stylesheet" type="text/css" href="../style/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pnotify/3.2.1/pnotify.css">
+  <link rel="stylesheet" type="text/css"
+    href="https://cdnjs.cloudflare.com/ajax/libs/pnotify/3.2.1/pnotify.brighttheme.css">
+</head>
+
+<body>
+  
+<center>
+   <div class="container" style="width:80% ;height:65%;">
+      <figure class="figure" style="width:80% ;height:65%;">
+
+        <video class="figure-img img-fluid rounded"onloadedmetadata="onPlay(this)"
+          id="inputVideo" autoplay muted
+          playsinline></video>
+        <canvas class="figure-img img-fluid rounded" id="overlay"> </canvas>
+      </figure>
+  
+    </div>
+
+    </center>
+   <center>  
+
+      <ul class="list-group">
+        <li class="list-group-item"><h3>Enroll Me</h3><a title=" Enroll New User" href="javascript:enrollUser()"><i
+            class="fa fa-user-plus fa-3x"></i></a></li>
+
+        <li class="list-group-item">
+          <h3>Mark My Attendance</h3><a  id="mark"><i class="fa fa-eject fa-3x" aria-hidden="true"></i></a>
+        </li>
+          
+       
+      </ul>
+  
+    </center>
+
+     
+  
+
+
+
+  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pnotify/3.2.1/pnotify.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+  <script type="module" src="../script/record.js"></script>
+</body>
+
+</html>
