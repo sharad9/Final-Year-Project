@@ -1,0 +1,476 @@
+<html>
+
+<body>
+
+    <div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-header">
+
+        <!-- Header section containing title -->
+        <header class="mdl-layout__header mdl-color-text--white mdl-color--light-blue-700">
+            <div class="mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-grid">
+                <div
+                    class="mdl-layout__header-row mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-cell--8-col-desktop">
+                    <a href="/">
+                        <h3>Firebase Authentication</h3>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <main class="mdl-layout__content mdl-color--grey-100">
+            <div class="mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-grid">
+
+                <!-- Container for the demo -->
+                <div
+                    class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-cell--12-col-desktop">
+                    <div class="mdl-card__title mdl-color--light-blue-600 mdl-color-text--white">
+                        <h2 class="mdl-card__title-text">Firebase Email &amp; Password Authentication</h2>
+                    </div>
+                    <div class="mdl-card__supporting-text mdl-color-text--grey-600">
+                        <p>Enter an email and password below and either sign in to an existing account or sign up</p>
+
+                        <input class="mdl-textfield__input" style="display:inline;width:auto;" type="text" id="email"
+                            name="email" placeholder="Email" />
+                        &nbsp;&nbsp;&nbsp;
+                        <input class="mdl-textfield__input" style="display:inline;width:auto;" type="password"
+                            id="password" name="password" placeholder="Password" />
+                        <br /><br />
+                        <button disabled class="mdl-button mdl-js-button mdl-button--raised" id="quickstart-sign-in"
+                            name="signin">Sign In</button>
+                        &nbsp;&nbsp;&nbsp;
+                        <button class="mdl-button mdl-js-button mdl-button--raised" id="quickstart-sign-up"
+                            name="signup">Sign Up</button>
+                        &nbsp;&nbsp;&nbsp;
+                        <button class="mdl-button mdl-js-button mdl-button--raised" disabled
+                            id="quickstart-verify-email" name="verify-email">Send Email Verification</button>
+                        &nbsp;&nbsp;&nbsp;
+                        <button class="mdl-button mdl-js-button mdl-button--raised" id="quickstart-password-reset"
+                            name="verify-email">Send Password Reset Email</button>
+                        &nbsp;&nbsp;&nbsp;
+                        <button class="mdl-button mdl-js-button mdl-button--raised" id="get-location"
+                            name="location">Get-location</button>
+                        <button class="mdl-button mdl-js-button mdl-button--raised" id="get-users-data"
+                            name="location">Get-users-data</button>
+                        <!-- Container where we'll display the user details -->
+                        <div class="quickstart-user-details-container">
+                            Firebase sign-in status: <span id="quickstart-sign-in-status">Unknown</span>
+                            <div>Firebase auth <code>currentUser</code> object value:</div>
+                            <pre><code id="user-position">null</code></pre>
+                            <pre><code id="quickstart-account-details">null</code></pre>
+                            <pre><code id="users-list">null</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.3.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.3.0/firebase-analytics.js";
+        import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail, sendEmailVerification } from "https://www.gstatic.com/firebasejs/9.3.0/firebase-auth.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.3.0/firebase-database.js";
+
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxZOOHaT4BLuo0WlXjrKSu5lA15GJoQ9s",
+            authDomain: "apniattendance.firebaseapp.com",
+            databaseURL: "https://apniattendance-default-rtdb.firebaseio.com",
+            projectId: "apniattendance",
+            storageBucket: "apniattendance.appspot.com",
+            messagingSenderId: "842668033040",
+            appId: "1:842668033040:web:197d6eae6c28a77ddd7695",
+            measurementId: "G-C9LM9MJBW1"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth();
+        const db = getDatabase();
+
+        const studentRef = ref(db, "students");
+
+
+
+        var usersData = null;
+
+        const teacherPos = { lat: 0, lon: 0 };
+
+        onValue(studentRef, readUsersData);
+        function readUsersData(snap) {
+            return usersData = snap.val();
+        }
+
+
+
+        function getUsersDataInCSV() {
+            if (!usersData) return;
+            const usersDataList = Object.values(usersData);
+
+            document.getElementById("users-list").innerHTML = JSON.stringify(usersDataList, null, '  ');
+            downloadCSV(usersDataList);
+
+        }
+
+
+
+
+        // const usersRef = database.ref("users");
+
+
+        function writeUserData(userId, latitude, longitude, distance = 0) {
+            const studentRef = ref(db, 'students/' + userId);
+            const data = {
+                userId: userId,
+                latitude: latitude,
+                longitude: longitude,
+                distance: distance,
+                collectedAt: (new Date()).toString().substring(16, 24)
+            };
+            set(studentRef, data);
+        }
+
+
+        var options = {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+        };
+
+        function success(pos) {
+            var crd = pos.coords;
+            document.getElementById('user-position').innerHTML = "Latitude: " + crd.latitude +
+                "  Longitude: " + crd.longitude;
+            if (!usersData) {
+                const distance = 0;
+                //distanceList.push([distance, usersId, distance <= 10 ? true : false]);
+                const userId = auth.currentUser.email.split('@')[0];
+
+
+                writeUserData(userId, crd.latitude, crd.longitude, distance);
+            }
+            else {
+
+            
+
+            const usersList = (Object.keys(usersData));
+            const usersDataList = Object.values(usersData);
+            // Convert Object to JSON
+            const jsonObject = JSON.stringify(usersData, null, '  ');
+            teacherPos.lat = usersData[usersList[0]]["latitude"];
+            teacherPos.lon = usersData[usersList[0]]["longitude"];
+
+
+
+
+            const distance = distanceBetween(crd.latitude, crd.longitude, teacherPos.lat, teacherPos.lon);
+            //distanceList.push([distance, usersId, distance <= 10 ? true : false]);
+            const userId = auth.currentUser.email.split('@')[0];
+            writeUserData(userId, crd.latitude, crd.longitude, distance);
+            }
+
+
+            
+            //console.log(distance);
+
+
+
+
+
+            console.log('Your current position is:');
+            console.log(`Latitude : ${crd.latitude}`);
+            console.log(`Longitude: ${crd.longitude}`);
+            console.log(`More or less ${crd.accuracy} meters.`);
+
+        }
+        function getLocation() {
+            if (navigator.geolocation) {
+                //navigator.geolocation.watchPosition(showPosition);
+
+                navigator.geolocation.watchPosition(success, error, options);
+
+            } else {
+                document.getElementById('user-position').innerHTML = "Geolocation is not supported by this browser.";
+            }
+        }
+
+        function error(err) {
+            console.warn(`ERROR(${err.code}): ${err.message}`);
+        }
+
+
+
+        /**
+* Handles the sign in button press.
+*/
+        function toggleSignIn() {
+
+            if (auth.currentUser) {
+                auth.signOut();
+            } else {
+                var email = document.getElementById('email').value;
+                var password = document.getElementById('password').value;
+                if (email.length < 4) {
+                    alert('Please enter an email address.');
+                    return;
+                }
+                if (password.length < 4) {
+                    alert('Please enter a password.');
+                    return;
+                }
+
+                // Sign in with email and pass.
+                signInWithEmailAndPassword(auth, email, password).catch(function (error) {
+                    // Handle Errors here.
+                    var errorCode = error.code;
+                    var errorMessage = error.message;
+                    if (errorCode === 'auth/wrong-password') {
+                        alert('Wrong password.');
+                    } else {
+                        alert(errorMessage);
+                    }
+                    console.log(error);
+                    document.getElementById('quickstart-sign-in').disabled = false;
+                });
+            }
+            document.getElementById('quickstart-sign-in').disabled = true;
+        }
+
+        /**
+         * Handles the sign up button press.
+         */
+        function handleSignUp() {
+            var email = document.getElementById('email').value;
+            var password = document.getElementById('password').value;
+
+            if (email.length < 4) {
+                alert('Please enter an email address.');
+                return;
+            }
+            if (password.length < 4) {
+                alert('Please enter a password.');
+                return;
+            }
+            // Create user with email and pass.
+            createUserWithEmailAndPassword(auth, email, password).catch(function (error) {
+                // Handle Errors here.
+                var errorCode = error.code;
+                var errorMessage = error.message;
+                if (errorCode == 'auth/weak-password') {
+                    alert('The password is too weak.');
+                } else {
+                    alert(errorMessage);
+                }
+                console.log(error);
+            });
+        }
+
+        /**
+         * Sends an email verification to the user.
+         */
+
+        function sendEmailVerification1() {
+            sendEmailVerification(auth.currentUser).then(function () {
+                // Email Verification sent!
+                alert('Email Verification Sent!');
+            });
+        }
+
+
+        function sendPasswordReset() {
+            var email = document.getElementById('email').value;
+            sendPasswordResetEmail(auth, email).then(function () {
+                // Password Reset Email Sent!
+                alert('Password Reset Email Sent!');
+            }).catch(function (error) {
+                // Handle Errors here.
+                var errorCode = error.code;
+                var errorMessage = error.message;
+                if (errorCode == 'auth/invalid-email') {
+                    alert(errorMessage);
+                } else if (errorCode == 'auth/user-not-found') {
+                    alert(errorMessage);
+                }
+                console.log(error);
+            });
+        }
+
+
+        function showPosition(position) {
+            //sendMessage()
+            document.getElementById('user-position').innerHTML = "Latitude: " + position.coords.latitude +
+                "  Longitude: " + position.coords.longitude;
+        }
+        /**
+         * initApp handles setting up UI event listeners and registering Firebase auth listeners:
+         *  - firebase.auth().onAuthStateChanged: This listener is called when the user is signed in or
+         *    out, and that is where we update the UI.
+         */
+        function initApp() {
+            // Listening for auth state changes.
+            onAuthStateChanged(auth, function (user) {
+
+                document.getElementById('quickstart-verify-email').disabled = true;
+                if (user) {
+                    // User is signed in.
+                    var displayName = user.displayName;
+                    var email = user.email;
+                    var emailVerified = user.emailVerified;
+                    var photoURL = user.photoURL;
+                    var isAnonymous = user.isAnonymous;
+                    var uid = user.uid;
+                    var providerData = user.providerData;
+                    document.getElementById('quickstart-sign-in-status').innerHTML = 'Signed in';
+                    document.getElementById('quickstart-sign-in').innerHTML = 'Sign out';
+                    document.getElementById('quickstart-account-details').innerHTML = JSON.stringify(user, null, '  ');
+
+                    if (!emailVerified) {
+                        document.getElementById('quickstart-verify-email').disabled = false;
+                    }
+                } else {
+                    // User is signed out.
+                    document.getElementById('quickstart-sign-in-status').innerHTML = 'Signed out';
+                    document.getElementById('quickstart-sign-in').innerHTML = 'Sign in';
+                    document.getElementById('quickstart-account-details').innerHTML = 'null';
+                }
+                document.getElementById('quickstart-sign-in').disabled = false;
+            });
+
+            document.getElementById('quickstart-sign-in').addEventListener('click', toggleSignIn, false);
+            document.getElementById('quickstart-sign-up').addEventListener('click', handleSignUp, false);
+            document.getElementById('quickstart-verify-email').addEventListener('click', sendEmailVerification1, false);
+            document.getElementById('get-users-data').addEventListener('click', getUsersDataInCSV, false);
+            document.getElementById('quickstart-password-reset').addEventListener('click', sendPasswordReset, false);
+            document.getElementById('get-location').addEventListener('click', getLocation, false);
+
+        }
+
+        window.onload = function () {
+            initApp();
+        };
+
+        function distanceBetween(lat1, lon1, lat2, lon2) {
+
+            if ((lat1 == lat2) && (lon1 == lon2)) {
+                return 0;
+            }
+            else {
+                var radlat1 = Math.PI * lat1 / 180;
+                var radlat2 = Math.PI * lat2 / 180;
+                var theta = lon1 - lon2;
+                var radtheta = Math.PI * theta / 180;
+                var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+                if (dist > 1) {
+                    dist = 1;
+                }
+                dist = Math.acos(dist);
+                dist = dist * 180 / Math.PI;
+                dist = dist * 60 * 1.1515;
+                dist = dist * 1.609344 * 1000;
+
+                return dist;
+            }
+        }
+
+        function arrayToCSV(objArray) {
+            const array = typeof objArray !== 'object' ? JSON.parse(objArray) : objArray;
+            let str = `${Object.keys(array[0]).map(value => `"${value}"`).join(",")}` + '\r\n';
+
+            return array.reduce((str, next) => {
+                str += `${Object.values(next).map(value => `"${value}"`).join(",")}` + '\r\n';
+                return str;
+            }, str);
+        }
+        // JSON to CSV Converter
+
+        function convertToCSV(objArray) {
+            var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+            var str = '';
+
+            for (var i = 0; i < array.length; i++) {
+                var line = '';
+                for (var index in array[i]) {
+                    if (line != '') line += ','
+
+                    line += array[i][index];
+                }
+
+                str += line + '\r\n';
+            }
+
+            return str;
+        }
+
+        function exportCSVFile(headers, items, fileTitle) {
+            if (headers) {
+                items.unshift(headers);
+            }
+
+            // Convert Object to JSON
+            var jsonObject = JSON.stringify(items);
+
+            var csv = convertToCSV(jsonObject);
+
+            var exportedFilenmae = fileTitle + '.csv' || 'export.csv';
+
+            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            if (navigator.msSaveBlob) { // IE 10+
+                navigator.msSaveBlob(blob, exportedFilenmae);
+            } else {
+                var link = document.createElement("a");
+                if (link.download !== undefined) { // feature detection
+                    // Browsers that support HTML5 download attribute
+                    var url = URL.createObjectURL(blob);
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", exportedFilenmae);
+                    link.style.visibility = 'hidden';
+                    //document.body.appendChild(link);
+                    link.click();
+                    //document.body.removeChild(link);
+                }
+            }
+        }
+
+        function downloadCSV(jsonItems) {
+            var headers = {
+                userId: 'Student ID           ',
+                latitude: 'Latitude           ',
+                longitude: 'Longitude           ',
+                collectedAt: 'Time           ',
+                distance: 'Distance      '
+
+            };
+
+
+
+            var itemsFormatted = [];
+
+            // format the data
+            jsonItems.forEach((item) => {
+                itemsFormatted.push({
+                    userId: item.userId.replace(/,/g, ''),
+                    latitude: item.latitude,
+                    longitude: item.longitude,
+                    collectedAt: item.collectedAt,
+                    distance: item.distance
+
+                });
+            });
+
+            const fileTitle = 'Attendance list'; // or 'my-unique-title'
+
+            exportCSVFile(headers, itemsFormatted, fileTitle); // call the exportCSVFile() function to process the JSON and trigger the download
+        }
+    </script>
+
+
+</body>
+
+</html>
