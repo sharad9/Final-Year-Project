@@ -1,47 +1,73 @@
+<!DOCTYPE html>
 <html>
 
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Face Recognition Attendance System</title>
   <script src="../script/face-api.min.js"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://getbootstrap.com/docs/5.2/assets/css/docs.css" rel="stylesheet">
-  <script>
 
-  </script>
-  <link rel="stylesheet" type="text/css" href='../style/style.css'>
+
+
+
+
+
+  <script src="https://maps.googleapis.com/maps/api/js"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+
+  <link rel="stylesheet" type="text/css" href="../style/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css">
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pnotify/3.2.1/pnotify.css">
   <link rel="stylesheet" type="text/css"
     href="https://cdnjs.cloudflare.com/ajax/libs/pnotify/3.2.1/pnotify.brighttheme.css">
+
+  <style>
+
+  </style>
 </head>
 
 <body>
-  <center>
-    <div class="container" style="width:80% ;height:65%;">
-      <figure class="figure" style="width:80% ;height:65%;">
 
-        <video class="figure-img img-fluid rounded" onloadedmetadata="onPlay(this)" id="inputVideo" autoplay muted
-          playsinline></video>
-        <canvas class="figure-img img-fluid rounded" id="overlay"> </canvas>
-      </figure>
+  <div class="header">
+    <h1>Apni Attendance</h1>
+  </div>
 
+  <div class="row">
+    <div class="col-3 menu">
+      <ul>
+       <li onclick="javascript:location.href='./index.html'"><i class="fa fa-home fa-2x" aria-hidden="true"></i>
+         <h4>Home</h4>
+       </li>
+        <li onclick="javascript:location.href='./fetch.html'"><i class="fa fa-eject fa-2x" aria-hidden="true"></i>
+          <h4>Reported Students</h4>
+        </li>
+       
+
+      </ul>
     </div>
 
-  </center>
-  <center>
 
-    <ul class="list-group">
-      <li class="list-group-item"><i class="fa fa-meh fa-6x" id="emotion-neutral"></i><i class="fa fa-smile fa-6x"
-          id="emotion-happy"></i><i class="fa fa-surprise fa-6x" id="emotion-surprised"></i><i class="fa fa-angry fa-6x"
-          id="emotion-angry"></i></li>
-
-    </ul>
-
-  </center>
+    <div class="col-5 right">
+      <div class="aside">
 
 
+        <video onloadedmetadata="onPlay(this)" id="inputVideo" autoplay muted playsinline width="100%"></video>
+        <canvas id="overlay"> </canvas>
 
+      </div>
+      <center>
+        <ul style="list-style: none;">
+          <li><i class="fa fa-meh fa-2x" id="emotion-neutral"></i><i class="fa fa-smile fa-2x"
+              id="emotion-happy"></i><i class="fa fa-surprise fa-2x" id="emotion-surprised"></i><i
+              class="fa fa-angry fa-2x" id="emotion-angry"></i></li>
+
+        </ul>
+      </center>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>FinalYearProject-FinalYearProject-FinalYearProject-FinalYearProject-FinalYearProject</p>
   </div>
   <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
