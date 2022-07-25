@@ -4,7 +4,9 @@ let inputSize = 512
 let scoreThreshold = 0.5
 
 let labeledDescriptors = null
-let faceMatcher = null
+let faceMatcher = null;
+let recorded = false;
+let eventDispatched = false;
 
 function getCurrentFaceDetectionNet() {
   return faceapi.nets.tinyFaceDetector
@@ -18,20 +20,13 @@ function getFaceDetectorOptions() {
   return new faceapi.TinyFaceDetectorOptions({ inputSize, scoreThreshold })
 }
 
-function hasEnrollmentData() {
 
-
-  return true;
-}
 
 window.clearAttendance = function clearAttendance() {
   db.set('attendance', []).write()
 }
 
-function clearUsers() {
-  db.set('enrollment', []).write()
-  location.href = '../html/enroll.html'
-}
+
 
 window.enrollUser = function enrollUser() {
   Swal.fire({
@@ -66,7 +61,7 @@ async function markAttendance() {
   });
 
   console.log(userDetails);
-  userDetails = userDetails.value.split(' ');
+  userDetails = userDetails.value.toUpperCase().split(' ');
   var className = userDetails[0], rollNo = userDetails[1];
   const studentRef = ref(db, `enrollment/${className}/${rollNo}/`);
   get(studentRef).then((snapshot) => {
@@ -95,34 +90,9 @@ async function markAttendance() {
 
 document.addEventListener('attendance_detected', (e) => {
 
-  const userDetails = e.detail
-  const time = Date();
-  var long, lat;
-  const success = (pos) => {
-    var crd = pos.coords;
-    long = crd.longitude;
-    lat = crd.latitude;
-
-
-    addNewUser(userDetails, time);
-
-
-
-
-  }
   function error(err) {
     console.warn(`ERROR(${err.code}): ${err.message}`);
   }
-
-  if (navigator.geolocation) {
-    //navigator.geolocation.watchPosition(showPosition);
-    navigator.geolocation.watchPosition(success, error, options);
-  } else {
-    alert('location is not supported');
-  }
-
-
-
   var options = {
     enableHighAccuracy: true,
     maximumAge: 0
@@ -130,64 +100,112 @@ document.addEventListener('attendance_detected', (e) => {
 
 
 
-  function addNewUser(userDetails, time) {
-    userDetails = userDetails.split(' ');
-    var className = userDetails[0]; var rollNo = userDetails[1]; var distance = userDetails[2];
+  const userDetails = e.detail
+  const time = Date();
 
-    var tlat = 0; var tlong = 0;
-    get(ref(db, `attendance/${className}/${0}/`)).then((snapshot) => {
-      if (snapshot.exists()) {
-        var tData = snapshot.val();
-        tlat = tData.latitude;
-        tlong = tData.longitude;
-        var distance = Math.round(getDistanceFromLatLonInKm(tlat, tlong, lat, long) * 100) / 100 + "km";
-        userDetails = userDetails + ' ' + distance;
-        set(ref(db, `attendance/${className}/${rollNo}/`), {
-          time: time,
-          latitude: lat,
-          longitude: long,
-          distance: distance
-
-        })
-          .then(() => {
-
-            // location.href = '../html/index.html'
-          })
-          .catch((error) => {
-            alert('Data not inserted' + error);
-          });
+  const success = (pos) => {
+    var crd = pos.coords;
+    var long = crd.longitude;
+    var lat = crd.latitude;
 
 
-      } else {
-        
-        set(ref(db, `attendance/${className}/${rollNo}/`), {
-          time: time,
-          latitude: lat,
-          longitude: long,
-          distance: '0km'
-
-        })
-          .then(() => {
-
-            // location.href = '../html/index.html'
-          })
-          .catch((error) => {
-            alert('Data not inserted' + error);
-          });
-      }
-    }).catch((error) => {
-      console.error(error);
-    });
+    addNewUser(userDetails, time, lat, long);
 
 
 
   }
+  if (navigator.geolocation) {
+    //navigator.geolocation.watchPosition(showPosition);
+    navigator.geolocation.watchPosition(success, error, options);
+  } else {
+    alert('location is not supported');
+  }
+}
+);
 
 
 
 
 
-});
+function addNewUser(userDetails, time, lat, long) {
+  recorded = true;
+  userDetails = userDetails.split(' ');
+  var className = userDetails[0]; var rollNo = userDetails[1]; var distance = userDetails[2];
+
+  var tlat = 0; var tlong = 0;
+  get(ref(db, `attendance/${className}/${0}/`)).then((snapshot) => {
+    if (snapshot.exists() && rollNo != "0") {
+      var tData = snapshot.val();
+      tlat = tData.latitude;
+      tlong = tData.longitude;
+      var distance = Math.round(getDistanceFromLatLonInKm(tlat, tlong, lat, long) * 100) / 100;
+      userDetails = userDetails + ' ' + distance * 1000;
+      set(ref(db, `attendance/${className}/${rollNo}/`), {
+        time: time,
+        latitude: lat,
+        longitude: long,
+        distance: distance
+
+      })
+        .then(() => {
+
+          Swal.fire({
+            title: 'You are marked',
+            text: "Thank You",
+            icon: 'info',
+            // confirmButtonColor: '#3085d6',
+            // cancelButtonColor: '#d33',
+            confirmButtonText: "I confirm "
+          }).then(() => {
+            location.href = '../html/index.html';
+          });
+          //alert('Data is inserted');
+          // 
+        })
+        .catch((error) => {
+          alert('Data not inserted' + error);
+        });
+
+
+    } else {
+
+      set(ref(db, `attendance/${className}/${rollNo}/`), {
+        time: time,
+        latitude: lat,
+        longitude: long,
+        distance: '0'
+
+      })
+        .then(() => {
+
+          Swal.fire({
+            title: 'You are marked',
+            text: "Thank You",
+            icon: 'info',
+            // confirmButtonColor: '#3085d6',
+            // cancelButtonColor: '#d33',
+            confirmButtonText: "I confirm "
+          }).then(() => {
+            location.href = '../html/index.html';
+          });
+        })
+        .catch((error) => {
+          alert('Data not inserted' + error);
+        });
+    }
+  }).catch((error) => {
+    console.error(error);
+  });
+
+
+
+}
+
+
+
+
+
+
 
 
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
@@ -237,7 +255,10 @@ window.onPlay = async function onPlay() {
         label = faceMatcher.findBestMatch(descriptor).label
         if (label !== 'unknown') {
           boxColor = 'green'
-          document.dispatchEvent(new CustomEvent('attendance_detected', { detail: label }))
+          
+            document.dispatchEvent(new CustomEvent('attendance_detected', { detail: label }))
+            
+          
         }
       }
 
